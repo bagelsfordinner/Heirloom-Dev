@@ -1,9 +1,6 @@
-// src/hooks/useSupabaseUser.ts
-'use client'
-
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import { Session, User } from '@supabase/supabase-js'
+import type { Session, User, AuthChangeEvent } from '@supabase/supabase-js'
 
 export function useSupabaseUser() {
   const [user, setUser] = useState<User | null>(null)
@@ -18,13 +15,15 @@ export function useSupabaseUser() {
 
     fetchUser()
 
-    const {
-      data: listener,
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (event: AuthChangeEvent, session: Session | null) => {
+        setUser(session?.user ?? null)
+      }
+    )
 
-    return () => listener.subscription.unsubscribe()
+    return () => {
+      listener?.subscription.unsubscribe()
+    }
   }, [])
 
   return { user, loading }
