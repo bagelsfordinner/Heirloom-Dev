@@ -2,20 +2,31 @@
 'use client'
 
 import { useEffect } from 'react'
-import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabaseClient'
+import { Spinner, Flex, Text } from '@chakra-ui/react'
 
 export default function AuthCallbackPage() {
   const router = useRouter()
 
   useEffect(() => {
-    const handleLogin = async () => {
-      await supabase.auth.getSession() // Required for client hydration
-      router.replace('/dashboard') // or your desired route
+    const handleRedirect = async () => {
+      const { error } = await supabase.auth.getSession()
+
+      if (error) {
+        console.error('Session error', error)
+      }
+
+      router.replace('/campaigns')
     }
 
-    handleLogin()
+    handleRedirect()
   }, [router])
 
-  return <p>Logging in...</p>
+  return (
+    <Flex justify="center" align="center" h="100vh" direction="column">
+      <Spinner />
+      <Text mt={4}>Logging you in...</Text>
+    </Flex>
+  )
 }
